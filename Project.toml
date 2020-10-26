@@ -3,6 +3,12 @@ uuid = "ffb31868-da07-46aa-8300-369b7f0e1b29"
 authors = ["Joey Nelson <joey@joescan.com> and contributors"]
 version = "0.1.0"
 
+[deps]
+CircleFit = "a2741ea9-3318-4d4b-8b99-ae5c58b57db7"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+
 [compat]
 julia = "1"
 
