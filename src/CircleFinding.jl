@@ -6,6 +6,7 @@ using Plots
 using StatsBase
 using Random
 using Statistics
+using Distributions
 
 function read_profiles(csv_file)
     a = readdlm(csv_file,',')
@@ -18,7 +19,7 @@ end
 """
 
 """
-function circle_ransac(data; radius = 0.98, threshold = 0.2, max_iters = 100, number_points = 8)
+function circle_ransac(data, radius; threshold = 0.4, max_iters = 2000, number_points = 8)
     data_length = size(data)[2]
     best_xc = 0
     best_yc = 0
@@ -28,13 +29,13 @@ function circle_ransac(data; radius = 0.98, threshold = 0.2, max_iters = 100, nu
         ri = randperm(data_length)
         maybe_in = data[:,ri[1:3]]
         xc,yc,rfit = circfit(maybe_in)
-        also_in = hcat(filter(xy -> abs(sqrt((xy[1]-xc)Z^2 + (xy[2]-yc)^2) - rfit) < threshold, eachcol(data[:,ri[4:end]]))...)
+        also_in = hcat(filter(xy -> abs(sqrt((xy[1]-xc)^2 + (xy[2]-yc)^2) - radius) < threshold, collect(eachcol(data[:,ri[4:end]])))...)
 
-        if size(also_in)[2] > number_points && abs(rfit - radius) < threshold
+        if size(also_in)[1] == 2 && size(also_in)[2] > number_points && abs(rfit - radius) < threshold
             current_data = hcat(maybe_in,also_in)
             better_xc, better_yc, better_rfit = circfit(current_data)
 
-            err = circle_error(current_data,better_xc,better_yc,better_rfit)
+            err = circle_error(current_data,better_xc,better_yc,radius)
 
             if err < best_err 
                 best_xc = better_xc
@@ -47,7 +48,14 @@ function circle_ransac(data; radius = 0.98, threshold = 0.2, max_iters = 100, nu
     return (best_xc, best_yc, best_rfit, best_err)
 end
 
-circle_error(data, xc, yc, radius) = sqrt(mean((radius - sqrt.(sum((data .- [xc;yc]).^2,dims=1))).^2))
+circfit(xy) = circfit(xy[1,:],xy[2,:])
+
+circle_error(data, xc, yc, radius) = sqrt(mean((radius .- sqrt.(sum((data .- [xc;yc]).^2,dims=1))).^2))
+
+function filterdata(x,y)
+    data = vcat(x[:]',y[:]')
+    return hcat(filter(xy -> isfinite(xy[1]) && isfinite(xy[2]),collect(eachcol(data)))...)
+end
 
 function fit_circle(x1,y1,x2,y2,radius)
     x3 = (x1+x2) ./ 2
@@ -58,5 +66,26 @@ function fit_circle(x1,y1,x2,y2,radius)
     yc = y3 - sqrt(radius^2 - (q/2)^2) * (x2 - x2)/q
     return(xc,yc)
 end
+
+function circle_hough(data,radius; xbins = (-15,15,500), ybins = (0, 30, 500))
+    bins = zeros(ybins[3],xbins[3])
+    step_size = (xbins[2]-xbins[1]) / (xbins[3]-1)
+    bx = LinRange(xbins...)
+    by = LinRange(ybins...)
+
+    d = Normal(radius, step_size)
+    for xy = eachcol(data)
+        bins = bins .+ [pdf(d, sqrt((xy[1] - x)^2 + (xy[2] - y)^2)) for y = by, x = bx]
+    end
+    
+    bin_idx = findmax(bins)[2]
+    return (bx[bin_idx[2]], by[bin_idx[1]])
+end
+
+function findindex(x,bins)
+    step_size = (bins[2]-bins[1]) / (bins[3]-1)
+    return (x - bins[1]) / step_size + 1
+end
+
     
 end
