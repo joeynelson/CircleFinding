@@ -4,6 +4,7 @@ authors = ["Joey Nelson <joey@joescan.com> and contributors"]
 version = "0.1.0"
 
 [deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 CircleFit = "a2741ea9-3318-4d4b-8b99-ae5c58b57db7"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
