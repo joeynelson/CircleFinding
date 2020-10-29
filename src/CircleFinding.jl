@@ -70,27 +70,30 @@ end
 function circle_hough_map(data,radius; xbins = (-15,15,500), ybins = (0, 30, 500))
     bins = zeros(ybins[3],xbins[3])
     step_size = (xbins[2]-xbins[1]) / (xbins[3]-1)
+
     bx = LinRange(xbins...)
     by = LinRange(ybins...)
 
     d = Normal(radius, step_size)
     for xy = eachcol(data)
-        xstart = findindex(xy[1] - radius - 1, xbins)
-        xend = findindex(xy[1] + radius + 1, xbins)
-        ystart = findindex(xy[2] - radius - 1, ybins)
-        yend = findindex(xy[2] + radius + 1, ybins)
+        xstart = findindex(xy[1] - radius - step_size, xbins)
+        xend = findindex(xy[1] + radius + step_size, xbins)
+        ystart = findindex(xy[2] - radius - step_size, ybins)
+        yend = findindex(xy[2] + step_size, ybins)
         bins[ystart:yend,xstart:xend] .+= [pdf(d, sqrt((xy[1] - x)^2 + (xy[2] - y)^2)) for y = by[ystart:yend], x = bx[xstart:xend]]
     end
-
     return bins
 end
 
 function circle_hough(data,radius; xbins = (-15,15,500), ybins = (0, 30, 500))
 
+    bx = LinRange(xbins...)
+    by = LinRange(ybins...)
+
     bins = circle_hough_map(data, radius, xbins=xbins, ybins=ybins)
     max_tuple = findmax(bins)
     return (bx[max_tuple[2][2]], by[max_tuple[2][1]],max_tuple[1])
-endgi
+end
 
 
 
