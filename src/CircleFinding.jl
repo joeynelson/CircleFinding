@@ -7,6 +7,8 @@ using StatsBase
 using Random
 using Statistics
 using Distributions
+using Optim
+using ForwardDiff
 
 function read_profiles(csv_file)
     a = readdlm(csv_file,',')
@@ -95,6 +97,15 @@ function circle_hough(data,radius; xbins = (-15,15,500), ybins = (0, 30, 500))
     return (bx[max_tuple[2][2]], by[max_tuple[2][1]],max_tuple[1])
 end
 
+function circle_hybrid(data,radius)
+    x,y,w = circle_hough(data,radius)
+
+    good_data = hcat(filter(xy -> radius-0.1 < sqrt( (xy[1] - x)^2 + (xy[2] - y)^2) < radius+0.1,collect(eachcol(data)))...)'
+    cir_fit_err(p, x, y) = sum((sqrt.((x .- p[1]).^2 .+ (y .- p[2]).^2) .- p[3]).^2)
+    
+    res = optimize(b -> cir_fit_err(b,good_data[:,1],good_data[:,2]),[x,y,radius], LBFGS(), autodiff=:forward)
+    return vcat(Optim.minimizer(res),length(good_data),Optim.minimum(res))
+end
 
 
 function findindex(x,bins)
