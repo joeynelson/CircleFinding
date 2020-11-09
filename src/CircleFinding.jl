@@ -69,14 +69,15 @@ function fit_circle(x1,y1,x2,y2,radius)
     return(xc,yc)
 end
 
-function circle_hough_map(data,radius; xbins = (-15,15,500), ybins = (0, 30, 500))
+function circle_hough_map(data,radius; xbins = (-15,15,500), ybins = (-30, 30, 1000))
     bins = zeros(ybins[3],xbins[3])
     step_size = (xbins[2]-xbins[1]) / (xbins[3]-1)
 
     bx = LinRange(xbins...)
     by = LinRange(ybins...)
 
-    d = Normal(radius, step_size)
+    #d = Normal(radius, step_size)
+    d = SymTriangularDist(radius,step_size)
     for xy = eachcol(data)
         xstart = findindex(xy[1] - radius - step_size, xbins)
         xend = findindex(xy[1] + radius + step_size, xbins)
@@ -87,7 +88,7 @@ function circle_hough_map(data,radius; xbins = (-15,15,500), ybins = (0, 30, 500
     return bins
 end
 
-function circle_hough(data,radius; xbins = (-15,15,500), ybins = (0, 30, 500))
+function circle_hough(data,radius; xbins = (-15,15,500), ybins = (-30, 30, 1000))
 
     bx = LinRange(xbins...)
     by = LinRange(ybins...)
