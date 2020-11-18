@@ -59,6 +59,7 @@ function filterdata(x,y)
     return hcat(filter(xy -> isfinite(xy[1]) && isfinite(xy[2]),collect(eachcol(data)))...)
 end
 
+
 function fit_circle(x1,y1,x2,y2,radius)
     x3 = (x1+x2) ./ 2
     y3 = (y1+y2) ./ 2
@@ -69,29 +70,40 @@ function fit_circle(x1,y1,x2,y2,radius)
     return(xc,yc)
 end
 
-function circle_hough_map(data,radius; xbins = (-15,15,500), ybins = (-30, 30, 1000))
+function joe_circle(data,radius; xbins = (-15,15,500), ybins = (-30, 30, 1000))
     bins = zeros(ybins[3],xbins[3])
-    step_size = (xbins[2]-xbins[1]) / (xbins[3]-1)
 
-    bx = LinRange(xbins...)
-    by = LinRange(ybins...)
+    d1 = data[:,1:end-1]
+    d2 = data[:,2:end]
+    
+
+end
+
+function circle_hough_map(data,radius; xbins = (-15,15), ybins = (-30, 30), step_size=0.1)
+
+    bx = collect(range(xbins...,step=step_size))
+    len_x = length(bx)
+    by = collect(range(ybins...,step=step_size))
+    len_y = length(by)
+
+    bins = zeros(length(by),length(bx))
 
     #d = Normal(radius, step_size)
     d = SymTriangularDist(radius,step_size)
     for xy = eachcol(data)
-        xstart = findindex(xy[1] - radius - step_size, xbins)
-        xend = findindex(xy[1] + radius + step_size, xbins)
-        ystart = findindex(xy[2] - radius - step_size, ybins)
-        yend = findindex(xy[2] + step_size, ybins)
+        xstart = findindex(xy[1] - radius - step_size, xbins[1], step_size, len_x)
+        xend = findindex(xy[1] + radius + step_size, xbins[1], step_size, len_x)
+        ystart = findindex(xy[2] - radius - step_size, ybins[1], step_size, len_y)
+        yend = findindex(xy[2] + step_size, ybins[1], step_size, len_y)
         bins[ystart:yend,xstart:xend] .+= [pdf(d, sqrt((xy[1] - x)^2 + (xy[2] - y)^2)) for y = by[ystart:yend], x = bx[xstart:xend]]
     end
     return bins
 end
 
-function circle_hough(data,radius; xbins = (-15,15,500), ybins = (-30, 30, 1000))
+function circle_hough(data,radius; xbins = (-15,15), ybins = (-30, 30), step_size = 0.1)
 
-    bx = LinRange(xbins...)
-    by = LinRange(ybins...)
+    bx = collect(range(xbins...,step=step_size))
+    by = collect(range(ybins...,step=step_size))
 
     bins = circle_hough_map(data, radius, xbins=xbins, ybins=ybins)
     max_tuple = findmax(bins)
@@ -108,11 +120,9 @@ function circle_hybrid(data,radius)
     return vcat(Optim.minimizer(res),length(good_data),Optim.minimum(res))
 end
 
-
-function findindex(x,bins)
-    step_size = (bins[2]-bins[1]) / (bins[3]-1)
-    index = round(Integer, (x - bins[1]) / step_size) + 1
-    return clamp(index, 1, bins[3])
+function findindex(x, initial, step_size, count)
+    index = round(Integer, (x - initial) / step_size) + 1
+    return clamp(index, 1, count)
 end
 
     
