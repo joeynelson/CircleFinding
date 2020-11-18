@@ -79,33 +79,33 @@ function joe_circle(data,radius; xbins = (-15,15,500), ybins = (-30, 30, 1000))
 
 end
 
-function circle_hough_map(data,radius; xbins = (-15,15), ybins = (-30, 30), step_size=0.05)
+function circle_hough_map(data,radius; xlims = (-15,15), ylims = (-30, 30), step_size=0.05)
 
-    bx = collect(range(xbins...,step=step_size))
+    bx = range(xlims...,step=step_size)
     len_x = length(bx)
-    by = collect(range(ybins...,step=step_size))
+    by = range(ylims...,step=step_size)
     len_y = length(by)
 
-    bins = zeros(length(by),length(bx))
+    bins = zeros(len_y,len_x)
 
     #d = Normal(radius, step_size)
     d = SymTriangularDist(radius,step_size)
     for xy = eachcol(data)
-        xstart = findindex(xy[1] - radius - step_size, xbins[1], step_size, len_x)
-        xend = findindex(xy[1] + radius + step_size, xbins[1], step_size, len_x)
-        ystart = findindex(xy[2] - radius - step_size, ybins[1], step_size, len_y)
-        yend = findindex(xy[2] + step_size, ybins[1], step_size, len_y)
+        xstart = findindex(xy[1] - radius - step_size, xlims[1], step_size, len_x)
+        xend = findindex(xy[1] + radius + step_size, xlims[1], step_size, len_x)
+        ystart = findindex(xy[2] - radius - step_size, ylims[1], step_size, len_y)
+        yend = findindex(xy[2] + step_size, ylims[1], step_size, len_y)
         bins[ystart:yend,xstart:xend] .+= [pdf(d, sqrt((xy[1] - x)^2 + (xy[2] - y)^2)) for y = by[ystart:yend], x = bx[xstart:xend]]
     end
     return bins
 end
 
-function circle_hough(data,radius; xbins = (-15,15), ybins = (-30, 30), step_size = 0.05)
+function circle_hough(data,radius; xlims = (-15,15), ylims = (-30, 30), step_size = 0.05)
 
-    bx = collect(range(xbins...,step=step_size))
-    by = collect(range(ybins...,step=step_size))
+    bx = range(xlims...,step=step_size)
+    by = range(ylims...,step=step_size)
 
-    bins = circle_hough_map(data, radius, xbins=xbins, ybins=ybins, step_size=step_size)
+    bins = circle_hough_map(data, radius, xlims=xlims, ylims=ylims, step_size=step_size)
     max_tuple = findmax(bins)
     return (bx[max_tuple[2][2]], by[max_tuple[2][1]],max_tuple[1])
 end
