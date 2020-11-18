@@ -105,7 +105,7 @@ function circle_hough(data,radius; xbins = (-15,15), ybins = (-30, 30), step_siz
     bx = collect(range(xbins...,step=step_size))
     by = collect(range(ybins...,step=step_size))
 
-    bins = circle_hough_map(data, radius, xbins=xbins, ybins=ybins)
+    bins = circle_hough_map(data, radius, xbins=xbins, ybins=ybins, step_size=step_size)
     max_tuple = findmax(bins)
     return (bx[max_tuple[2][2]], by[max_tuple[2][1]],max_tuple[1])
 end
