@@ -79,7 +79,7 @@ function joe_circle(data,radius; xbins = (-15,15,500), ybins = (-30, 30, 1000))
 
 end
 
-function circle_hough_map(data,radius; xbins = (-15,15), ybins = (-30, 30), step_size=0.1)
+function circle_hough_map(data,radius; xbins = (-15,15), ybins = (-30, 30), step_size=0.05)
 
     bx = collect(range(xbins...,step=step_size))
     len_x = length(bx)
@@ -100,7 +100,7 @@ function circle_hough_map(data,radius; xbins = (-15,15), ybins = (-30, 30), step
     return bins
 end
 
-function circle_hough(data,radius; xbins = (-15,15), ybins = (-30, 30), step_size = 0.1)
+function circle_hough(data,radius; xbins = (-15,15), ybins = (-30, 30), step_size = 0.05)
 
     bx = collect(range(xbins...,step=step_size))
     by = collect(range(ybins...,step=step_size))
