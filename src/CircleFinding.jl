@@ -18,6 +18,19 @@ function read_profiles(csv_file)
     return (x,y)
 end
 
+function read_apex_profile(csv_file)
+    a = readdlm(csv_file,',')
+    x = (a[:,1]./1000.0)'
+    y = (a[:,2]./1000.0)'
+    return (x,y)
+end
+
+function read_single_profile(csv_file)
+    a = readdlm(csv_file,',')
+    x = a[:,2:2:end]./1000.0
+    y = a[:,3:2:end]./1000.0
+end
+
 """
 
 """
